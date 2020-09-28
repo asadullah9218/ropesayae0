@@ -1,54 +1,40 @@
-const { Client, Collection } = require("discord.js");
-const { config } = require("dotenv");
-const fs = require("fs");
+'use strict';
 
-const client = new Client({
-    disableEveryone: true
+/**
+ * An example of how you can send embeds
+ */
+
+// Extract the required classes from the discord.js module
+const { Client, MessageEmbed } = require('discord.js');
+
+// Create an instance of a Discord client
+const client = new Client();
+
+/**
+ * The ready event is vital, it means that only _after_ this will your bot start reacting to information
+ * received from Discord
+ */
+client.on('ready', () => {
+  console.log('I am ready!');
 });
 
-client.commands = new Collection();
-client.aliases = new Collection();
-
-client.categories = fs.readdirSync("./commands/");
-
-config({
-    path: __dirname + "/.env"
+client.on('message', message => {
+  // If the message is "how to embed"
+  if (message.content === 'how to embed') {
+    // We can create embeds using the MessageEmbed constructor
+    // Read more about all that you can do with the constructor
+    // over at https://discord.js.org/#/docs/main/master/class/MessageEmbed
+    const embed = new MessageEmbed()
+      // Set the title of the field
+      .setTitle('A slick little embed')
+      // Set the color of the embed
+      .setColor(0xff0000)
+      // Set the main content of the embed
+      .setDescription('Hello, this is a slick embed!');
+    // Send the embed to the same channel as the message
+    message.channel.send(embed);
+  }
 });
 
-["command"].forEach(handler => {
-    require(`./handlers/${handler}`)(client);
-});
-
-client.on("ready", () => {
-    console.log(`Hi, ${client.user.username} is now online!`);
-
-    client.user.setPresence({
-        status: "online",
-        game: {
-            name: "me getting developed",
-            type: "STREAMING"
-        }
-    }); 
-});
-
-client.on("message", async message => {
-    const prefix = "!";
-
-    if (message.author.bot) return;
-    if (!message.guild) return;
-    if (!message.content.startsWith(prefix)) return;
-    if (!message.member) message.member = await message.guild.fetchMember(message);
-
-    const args = message.content.slice(prefix.length).trim().split(/ +/g);
-    const cmd = args.shift().toLowerCase();
-    
-    if (cmd.length === 0) return;
-    
-    let command = client.commands.get(cmd);
-    if (!command) command = client.commands.get(client.aliases.get(cmd));
-
-    if (command) 
-        command.run(client, message, args);
-});
-
-client.login(process.env.TOKEN);
+// Log our bot in using the token from https://discord.com/developers/applications
+client.login('NzU2MTQzNTE2MDA1OTU3NzIz.X2Njhg.U0T_n0jtB9xi4qkLcqT8xRaIQVQ');
